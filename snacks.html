@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Tienda - Cine Estelar</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header>
+    <h1>Cine Estelar 🎥</h1>
+    <nav>
+      <ul>
+        <li><a href="index.html">Cartelera</a></li>
+        <li><a href="reservar.html">Reservar</a></li>
+        <li><a href="snacks.html">Tienda</a></li>
+        <li><a href="checkout.html">Resumen</a></li>
+        <li><a href="contacto.html">Contacto</a></li>
+      </ul>
+    </nav>
+  </header>
+
+  <section>
+    <h2>🍿 Tienda de Snacks</h2>
+    <div class="productos" id="productos">
+      <!-- Productos generados por JavaScript -->
+    </div>
+
+    <div class="cupon">
+      <label for="codigo-cupon">¿Tienes un cupón de descuento?</label><br>
+      <input type="text" id="codigo-cupon" placeholder="Ingresa código">
+      <button id="aplicar-cupon">Aplicar cupón</button>
+      <p id="mensaje-cupon" style="color: #a259ff; margin-top: 0.5rem;"></p>
+    </div>
+
+    <h3>Total: $<span id="total">0</span> MXN</h3>
+    <button id="continuarCheckout">Ir al resumen</button>
+  </section>
+
+  <footer>
+    <p>&copy; 2025 Cine Estelar</p>
+  </footer>
+
+  <script>
+    const productos = [
+      { id: 1, nombre: "Palomitas grandes", precio: 60 },
+      { id: 2, nombre: "Palomitas chicas", precio: 40 },
+      { id: 3, nombre: "Refresco grande", precio: 50 },
+      { id: 4, nombre: "Refresco chico", precio: 30 },
+      { id: 5, nombre: "Nachos", precio: 55 },
+      { id: 6, nombre: "Hot Dog", precio: 45 },
+      { id: 7, nombre: "Chocolates", precio: 35 },
+      { id: 8, nombre: "Gomitas", precio: 25 }
+    ];
+
+    const contenedor = document.getElementById("productos");
+    const totalSpan = document.getElementById("total");
+    let total = 0;
+    const seleccionados = [];
+
+    productos.forEach(p => {
+      const div = document.createElement("div");
+      div.classList.add("producto");
+
+      div.innerHTML = `
+        <h4>${p.nombre}</h4>
+        <p>$${p.precio} MXN</p>
+        <input type="number" min="0" value="0" data-id="${p.id}" data-precio="${p.precio}" class="cantidad-snack">
+      `;
+      contenedor.appendChild(div);
+    });
+
+    contenedor.addEventListener("input", () => {
+      total = 0;
+      seleccionados.length = 0;
+
+      document.querySelectorAll(".cantidad-snack").forEach(input => {
+        const cantidad = parseInt(input.value);
+        const precio = parseFloat(input.dataset.precio);
+        const id = parseInt(input.dataset.id);
+        const producto = productos.find(p => p.id === id);
+
+        if (cantidad > 0) {
+          total += cantidad * precio;
+          seleccionados.push({
+            nombre: producto.nombre,
+            cantidad,
+            precio: producto.precio
+          });
+        }
+      });
+
+      aplicarDescuentoSiExiste(); // actualiza el total con descuento
+    });
+
+    let descuento = 0;
+
+    document.getElementById("aplicar-cupon").addEventListener("click", () => {
+      const codigo = document.getElementById("codigo-cupon").value.trim().toUpperCase();
+      const mensaje = document.getElementById("mensaje-cupon");
+
+      if (codigo === "ESTELAR10") {
+        descuento = 0.10;
+        mensaje.textContent = "Cupón aplicado: 10% de descuento 🎉";
+      } else {
+        descuento = 0;
+        mensaje.textContent = "Cupón no válido.";
+      }
+
+      aplicarDescuentoSiExiste();
+    });
+
+    function aplicarDescuentoSiExiste() {
+      const totalBoletos = JSON.parse(localStorage.getItem("reserva"))?.totalBoletos || 0;
+      const totalSnacks = total;
+      const totalFinal = (totalBoletos + totalSnacks) * (1 - descuento);
+      totalSpan.textContent = totalFinal.toFixed(2);
+    }
+
+    document.getElementById("continuarCheckout").addEventListener("click", () => {
+      const totalBoletos = JSON.parse(localStorage.getItem("reserva"))?.totalBoletos || 0;
+      const totalSnacks = total;
+      const totalFinal = (totalBoletos + totalSnacks) * (1 - descuento);
+
+      const ordenSnacks = {
+        snacks: seleccionados,
+        totalSnacks,
+        totalFinal,
+        descuentoAplicado: descuento > 0
+      };
+
+      localStorage.setItem("ordenSnacks", JSON.stringify(ordenSnacks));
+      window.location.href = "checkout.html";
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Reservar - Cine Estelar</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header>
+    <h1>Cine Estelar 🎥</h1>
+    <nav>
+      <ul>
+        <li><a href="index.html">Cartelera</a></li>
+        <li><a href="reservar.html">Reservar</a></li>
+        <li><a href="snacks.html">Tienda</a></li>
+        <li><a href="checkout.html">Resumen</a></li>
+        <li><a href="contacto.html">Contacto</a></li>
+      </ul>
+    </nav>
+  </header>
+
+  <section>
+    <h2>🎟 Selecciona Película y Horario</h2>
+    <form id="form-reserva">
+      <label>Película:
+        <select id="pelicula" required>
+          <option value="">Selecciona</option>
+          <option value="Guardianes del Espacio">Guardianes del Espacio</option>
+          <option value="Risas Eternas">Risas Eternas</option>
+        </select>
+      </label>
+
+      <label>Horario:
+        <select id="horario" required>
+          <option value="">Selecciona</option>
+          <option value="16:00">16:00</option>
+          <option value="18:30">18:30</option>
+          <option value="21:00">21:00</option>
+        </select>
+      </label>
+
+      <label>Cantidad de boletos:
+        <input type="number" id="cantidadBoletos" min="1" max="10" required>
+      </label>
+
+      <div id="asientos-container" style="display:none;">
+        <h3>Selecciona tus asientos (Costo: $50 c/u)</h3>
+        <div class="asientos" id="asientos"></div>
+      </div>
+
+      <button type="submit">Continuar a Tienda</button>
+    </form>
+  </section>
+
+  <footer>
+    <p>&copy; 2025 Cine Estelar</p>
+  </footer>
+
+  <script>
+    // Mostrar asientos cuando se elige cantidad
+    const cantidadInput = document.getElementById("cantidadBoletos");
+    const asientosContainer = document.getElementById("asientos-container");
+    const asientosDiv = document.getElementById("asientos");
+
+    cantidadInput.addEventListener("input", () => {
+      const cantidad = parseInt(cantidadInput.value);
+      if (cantidad > 0) {
+        asientosContainer.style.display = "block";
+        generarAsientos(cantidad);
+      } else {
+        asientosContainer.style.display = "none";
+      }
+    });
+
+    function generarAsientos(cantidad) {
+      asientosDiv.innerHTML = "";
+      for (let i = 1; i <= 50; i++) {
+        const div = document.createElement("div");
+        div.textContent = i;
+        div.addEventListener("click", () => {
+          div.classList.toggle("seleccionado");
+          const seleccionados = document.querySelectorAll(".asientos .seleccionado");
+          if (seleccionados.length > cantidad) {
+            div.classList.remove("seleccionado");
+          }
+        });
+        asientosDiv.appendChild(div);
+      }
+    }
+
+    // Guardar en localStorage y redirigir
+    document.getElementById("form-reserva").addEventListener("submit", function(e) {
+      e.preventDefault();
+      const pelicula = document.getElementById("pelicula").value;
+      const horario = document.getElementById("horario").value;
+      const cantidad = parseInt(document.getElementById("cantidadBoletos").value);
+      const asientosSeleccionados = [...document.querySelectorAll(".asientos .seleccionado")].map(a => a.textContent);
+
+      if (asientosSeleccionados.length !== cantidad) {
+        alert("Debes seleccionar exactamente " + cantidad + " asientos.");
+        return;
+      }
+
+      const precioPorBoleto = 50;
+      const totalBoletos = cantidad * precioPorBoleto;
+
+      const reserva = {
+        pelicula,
+        horario,
+        cantidad,
+        asientos: asientosSeleccionados,
+        totalBoletos
+      };
+
+      localStorage.setItem("reserva", JSON.stringify(reserva));
+      window.location.href = "snacks.html";
+    });
+  </script>
+</body>
+</html>
